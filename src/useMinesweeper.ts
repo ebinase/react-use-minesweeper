@@ -113,7 +113,7 @@ const reducer = (state: State, action: Action): State => {
   }
 };
 
-const useMineSweeper = (defaultGameMode: GameMode = 'easy') => {
+const useMinesweeper = (defaultGameMode: GameMode = 'easy') => {
   // reducer
   const [state, dispatch] = useReducer(reducer, initialize(defaultGameMode));
 
@@ -156,6 +156,6 @@ const useMineSweeper = (defaultGameMode: GameMode = 'easy') => {
   };
 };
 
-export default useMineSweeper;
+export default useMinesweeper;
 
-export type MineSweeper = ReturnType<typeof useMineSweeper>;
+export type Minesweeper = ReturnType<typeof useMinesweeper>;
