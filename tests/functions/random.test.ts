@@ -1,4 +1,4 @@
-import { getRandomElements } from './random';
+import { getRandomElements } from '../../src/functions/random';
 
 test('getRandomElements_配列内の要素が取得できている', () => {
   const size = 3;
