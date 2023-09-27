@@ -1,6 +1,7 @@
 {
   "name": "@ebinase/react-use-minesweeper",
   "version": "0.1.0",
+  "main": "src/index.js",
   "scripts": {
     "format": "prettier --write --ignore-path .gitignore './**/*.{js,jsx,ts,tsx,json,css}'",
     "test": "jest --watch"
