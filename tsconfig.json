@@ -16,7 +16,8 @@
     "plugins": [],
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "outDir": "dist",
   },
   "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]
