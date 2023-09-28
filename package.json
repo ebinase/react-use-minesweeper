@@ -1,7 +1,23 @@
 {
   "name": "@ebinase/react-use-minesweeper",
+  "description": "A simple react hook for minesweeper",
   "version": "0.1.0",
-  "main": "src/index.js",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "react",
+    "minesweeper",
+    "hook",
+    "game"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ebinase/react-use-minesweeper.git"
+  },
   "scripts": {
     "build": "tsc",
     "format": "prettier --write --ignore-path .gitignore './**/*.{js,jsx,ts,tsx,json,css}'",
