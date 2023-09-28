@@ -1,8 +1,9 @@
 {
-  "name": "@ebinase/react-use-minesweeper",
+  "name": "@ebina.s/react-use-minesweeper",
   "description": "A simple react hook for minesweeper",
   "version": "0.1.0",
   "license": "MIT",
+  "author": "ebina.s",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
