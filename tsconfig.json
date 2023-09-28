@@ -5,6 +5,7 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "strict": true,
     "esModuleInterop": true,
+    "moduleResolution": "node",
     "isolatedModules": true,
     "jsx": "react-jsx",
     "declaration": true,
