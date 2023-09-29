@@ -1,6 +1,6 @@
-import { getRandomElements } from '@/functions/random';
-import type { Either } from '@/types/Either';
-import { convertToMatrix, getAroundItems, isInside, toMarixPosition } from '@/functions/matrix';
+import { getRandomElements } from './random';
+import type { Either } from '../types/Either';
+import { convertToMatrix, getAroundItems, isInside, toMarixPosition } from './matrix';
 
 export type BoardConfig = {
   rows: number;

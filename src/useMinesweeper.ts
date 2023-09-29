@@ -12,7 +12,7 @@ import {
   setMines,
   switchFlagType,
   toggleFlag,
-} from '@/functions/board';
+} from './functions/board';
 
 type GameState = 'initialized' | 'playing' | 'completed' | 'failed';
 
