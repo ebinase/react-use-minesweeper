@@ -1,16 +1,15 @@
 // main entry point of the library
 
-// TODO: Separate the main logic, helper functions, and type definitions from each files
-
 // hooks
-export { useMinesweeper } from './useMinesweeper';
+export { useMinesweeper } from './hooks/useMinesweeper';
 
 // constants
-export { GAME_MODE_LIST } from './useMinesweeper';
+export { GAME_MODE_LIST } from './logics/game';
 
 // helpers
-export { isMine, isCount, isEmpty, isOpened, isUnopened, isFlagged } from './functions/board';
+export { isMine, isCount, isEmpty, isOpened, isUnopened, isFlagged } from './helpers/cellHelpers';
 
 // types
-export type { Minesweeper, GameMode } from './useMinesweeper';
-export type { Board, BoardConfig, CellData } from './functions/board';
+export type { Minesweeper } from './hooks/useMinesweeper';
+export type { GameMode } from './logics/game';
+export type { Board, BoardConfig, CellData } from './logics/board';
