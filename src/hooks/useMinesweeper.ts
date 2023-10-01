@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useReducer, useState } from 'react';
+import { useReducer, useCallback, useState, useEffect } from 'react';
+import { GameMode, GAME_MODE_LIST, GameState, resolveBoardConfig } from '../logics/game';
 import {
   Board,
-  BoardConfig,
   countNormalFlags,
   countSuspectedFlags,
   igniteMines,
@@ -12,23 +12,7 @@ import {
   setMines,
   switchFlagType,
   toggleFlag,
-} from './functions/board';
-
-type GameState = 'initialized' | 'playing' | 'completed' | 'failed';
-
-export type GameMode = 'easy' | 'normal' | 'hard';
-export const GAME_MODE_LIST: GameMode[] = ['easy', 'normal', 'hard'];
-
-const gameModeToOptions = (gameMode: GameMode): BoardConfig => {
-  switch (gameMode) {
-    case 'easy':
-      return { rows: 9, cols: 9, mines: 10 };
-    case 'normal':
-      return { rows: 16, cols: 16, mines: 40 };
-    case 'hard':
-      return { rows: 30, cols: 16, mines: 99 };
-  }
-};
+} from '../logics/board';
 
 type State = {
   gameMode: GameMode;
@@ -47,7 +31,7 @@ const initialize = (gameMode: GameMode): State => {
   return {
     gameMode,
     gameState: 'initialized',
-    board: initBoard(gameModeToOptions(gameMode)),
+    board: initBoard(resolveBoardConfig(gameMode)),
   };
 };
 
