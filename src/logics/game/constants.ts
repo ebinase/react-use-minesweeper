@@ -1,7 +1,7 @@
 import { BoardConfig } from '../board';
 import { GameMode } from './types';
 
-export const GAME_MODE_LIST: GameMode[] = ['easy', 'normal', 'hard'] as const;
+export const GAME_MODE_LIST: readonly GameMode[] = ['easy', 'normal', 'hard'] as const;
 
 export const GAME_MODE_CONFIG_MAP: Record<GameMode, BoardConfig> = {
   easy: { rows: 9, cols: 9, mines: 10 },
