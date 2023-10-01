@@ -4,8 +4,8 @@ import { convertToMatrix, getAroundItems, toMarixPosition } from '../../utils/ma
 import { getRandomElements } from '../../utils/random';
 
 // NOTE: PlainBoard型を作ってもいいかも
-export const initBoard = (options: BoardConfig): Board => {
-  return makePlainBoard(options);
+export const initBoard = (config: BoardConfig): Board => {
+  return makePlainBoard(config);
 };
 
 const makePlainBoard = (config: BoardConfig): Board => {

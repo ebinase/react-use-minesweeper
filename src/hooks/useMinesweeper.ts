@@ -1,5 +1,5 @@
 import { useReducer, useCallback, useState, useEffect } from 'react';
-import { GameMode, GAME_MODE_LIST, GameState, gameModeToOptions } from '../logics/game';
+import { GameMode, GAME_MODE_LIST, GameState, resolveBoardConfig } from '../logics/game';
 import {
   Board,
   countNormalFlags,
@@ -31,7 +31,7 @@ const initialize = (gameMode: GameMode): State => {
   return {
     gameMode,
     gameState: 'initialized',
-    board: initBoard(gameModeToOptions(gameMode)),
+    board: initBoard(resolveBoardConfig(gameMode)),
   };
 };
 

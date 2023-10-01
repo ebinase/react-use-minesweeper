@@ -1,20 +1,14 @@
 import { BoardConfig } from '../board';
+import { GAME_MODE_CONFIG_MAP } from './constants';
 import { GameMode } from './types';
 
 // types
 export type * from './types';
 
-export const GAME_MODE_LIST: GameMode[] = ['easy', 'normal', 'hard'];
+// constants
+export { GAME_MODE_LIST } from './constants';
 
-export const gameModeToOptions = (gameMode: GameMode): BoardConfig => {
-  switch (gameMode) {
-    case 'easy':
-      return { rows: 9, cols: 9, mines: 10 };
-    case 'normal':
-      return { rows: 16, cols: 16, mines: 40 };
-    case 'hard':
-      return { rows: 30, cols: 16, mines: 99 };
-    default:
-      return { rows: 9, cols: 9, mines: 10 };
-  }
+// functions
+export const resolveBoardConfig = (gameMode: GameMode): BoardConfig => {
+  return GAME_MODE_CONFIG_MAP[gameMode];
 };
