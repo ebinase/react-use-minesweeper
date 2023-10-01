@@ -20,7 +20,8 @@
     "url": "https://github.com/ebinase/react-use-minesweeper.git"
   },
   "scripts": {
-    "build": "tsc",
+    "clean": "rimraf dist",
+    "build": "npm run clean && tsc",
     "format": "prettier --write --ignore-path .gitignore './**/*.{js,jsx,ts,tsx,json,css}'",
     "test": "jest --watch"
   },
@@ -39,6 +40,7 @@
     "eslint-config-prettier": "^9.0.0",
     "jest": "^29.6.4",
     "prettier": "^3.0.2",
+    "rimraf": "^5.0.5",
     "typescript": "5.1.6"
   }
 }
