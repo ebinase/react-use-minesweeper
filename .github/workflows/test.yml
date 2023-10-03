@@ -10,9 +10,8 @@ on:
       - synchronize
 
 jobs:
-  test-format-build:
+  setup:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -25,13 +24,31 @@ jobs:
     - name: Install dependencies
       run: npm install
 
+  test:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
     - name: Run tests
       run: npm run test
 
+  format:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
     - name: Check format
       run: |
         npm run format
         git diff --exit-code
 
+  build:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
     - name: Check build errors
       run: npm run build
