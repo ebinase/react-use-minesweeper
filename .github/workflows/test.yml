@@ -1,0 +1,64 @@
+name: Test, Format, and Check build errors
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - opened
+      - synchronize
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: 'lts/*'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run tests
+      run: npm run test
+
+  format:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: 'lts/*'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Check format
+      run: |
+        npm run format
+        git diff --exit-code
+
+  check-build-errors:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: 'lts/*'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Check build errors
+      run: npm run build
