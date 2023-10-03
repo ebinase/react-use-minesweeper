@@ -1,9 +1,9 @@
-name: Test, Format, and Build
+name: Test, Format, and Check build errors
 
 on:
   push:
     branches:
-      - '**'
+      - main
   pull_request:
     types:
       - opened
@@ -33,5 +33,5 @@ jobs:
         npm run format
         git diff --exit-code
 
-    - name: Build
+    - name: Check build errors
       run: npm run build
