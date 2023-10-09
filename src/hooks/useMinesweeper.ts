@@ -9,15 +9,35 @@ import {
   isAllOpened,
   openAll,
   openCell,
-  setMines,
+  makePlayable,
   switchFlagType,
   toggleFlag,
+  PlainBoard,
+  PlayableBoard,
 } from '../logics/board';
 
-type State = {
+interface State {
   gameMode: GameMode;
   gameState: GameState;
   board: Board;
+};
+
+interface InitialState extends State {
+  gameState: 'initialized';
+  board: PlainBoard;
+};
+
+interface PlayingState extends State {
+  gameState: 'playing';
+  board: PlayableBoard;
+};
+
+const isInitialState = (state: State | InitialState): state is InitialState => {
+  return state.gameState === 'initialized';
+}
+
+const isPlayingState = (state: State | InitialState): state is PlayingState => {
+  return state.gameState === 'playing';
 };
 
 type Action =
@@ -27,7 +47,7 @@ type Action =
   | { type: 'toggleFlag'; index: number }
   | { type: 'switchFlagType'; index: number };
 
-const initialize = (gameMode: GameMode): State => {
+const initialize = (gameMode: GameMode): InitialState => {
   return {
     gameMode,
     gameState: 'initialized',
@@ -35,15 +55,17 @@ const initialize = (gameMode: GameMode): State => {
   };
 };
 
-const open = (state: State, action: Extract<Action, { type: 'open' }>): State => {
-  // ゲームが終了していたら何もしない
-  if (state.gameState === 'completed' || state.gameState === 'failed') {
+const open = (
+  state: InitialState | PlayingState | State,
+  action: Extract<Action, { type: 'open' }>,
+): PlayingState | State => {
+  if (!isInitialState(state) && !isPlayingState(state)) {
+    console.error('Invalid state: Expected InitialState or PlayingState. Got ' + state.gameState);
     return state;
   }
 
   // 最初のターンだけクリックした場所が空白になるように盤面を強制的に書き換える
-  const board =
-    state.gameState === 'initialized' ? setMines(state.board, action.index) : state.board;
+  const board = isInitialState(state) ? makePlayable(state.board, action.index) : state.board;
 
   const result = openCell(board, action.index);
 
