@@ -1,3 +1,6 @@
+# TODO: Add a step to update the version number if needed
+# TODO: Add a step to check correctness of the version number if needed
+
 name: Release
 
 on:
@@ -6,6 +9,8 @@ on:
       - closed
     branches:
       - main
+    paths:
+    - 'package.json'
 
 jobs:
   release:
@@ -31,8 +36,6 @@ jobs:
     - name: Build
       run: npm run build
 
-    # TODO: Add a step to update the version number if needed
-    # TODO: Add a step to check correctness of the version number if needed
     - name: Publish to npm
       run: npm publish
       env:
