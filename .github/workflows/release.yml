@@ -1,18 +1,15 @@
-name: Release Test
+name: Release
 
 on:
-   pull_request:
+  pull_request:
     types:
-      - opened
-      - synchronize
-  # pull_request:
-  #   types:
-  #     - closed
-  #   branches:
-  #     - main
+      - closed
+    branches:
+      - main
 
 jobs:
   release:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     steps:
@@ -33,11 +30,10 @@ jobs:
 
     - name: Build
       run: npm run build
-    
-    - name: Show Release Content
-      run: npm pack --dry-run
 
-    # - name: Publish to npm
-    #   run: npm publish
-    #   env:
-    #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+    # TODO: Add a step to update the version number if needed
+    # TODO: Add a step to check correctness of the version number if needed
+    - name: Publish to npm
+      run: npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
