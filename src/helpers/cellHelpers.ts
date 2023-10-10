@@ -6,6 +6,12 @@ export function isMine(
   return cell.content.type === 'mine';
 }
 
+export function isExplodedMine(
+  cell: CellData,
+): cell is CellData & { content: { type: 'mine'; exploded: true } } {
+  return cell.content.type === 'mine' && cell.content.exploded;
+}
+
 export function isCount(
   cell: CellData,
 ): cell is CellData & { content: { type: 'count'; value: number } } {

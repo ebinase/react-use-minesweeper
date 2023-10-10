@@ -11,6 +11,14 @@ export interface PlayableBoard extends Board {
   data: PlayableCellData[][];
 }
 
+export interface AllOpenedBoard extends Board {
+  data: AllOpenedCellData[][];
+}
+
+export interface ExplodedBoard extends Board {
+  data: (ExplodedCellData | AllOpenedCellData)[][];
+}
+
 export type BoardConfig = {
   rows: number;
   cols: number;
@@ -35,4 +43,17 @@ export interface PlayableCellData extends Omit<CellData, 'content'> {
   content:
     | { type: 'mine'; exploded: false } // [changed] exploded: boolean -> exploded: false
     | Exclude<CellData['content'], { type: 'mine'; exploded: boolean }>;
+}
+
+// all cells are opened and mines are not exploded
+export interface AllOpenedCellData extends PlayableCellData {
+  state: { type: 'opened' };
+}
+
+// all cells are opened and mines are exploded
+export interface ExplodedCellData extends Omit<CellData, 'content'> {
+  content:
+    | { type: 'mine'; exploded: true } // [changed] exploded: boolean -> exploded: true
+    | Exclude<CellData['content'], { type: 'mine'; exploded: boolean }>;
+  state: { type: 'opened' };
 }

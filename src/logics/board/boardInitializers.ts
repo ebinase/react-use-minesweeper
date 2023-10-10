@@ -1,11 +1,4 @@
-import {
-  BoardConfig,
-  CellData,
-  PlainBoard,
-  PlayableCellData,
-  PlainCellData,
-  PlayableBoard,
-} from '.';
+import { BoardConfig, CellData, PlainBoard, PlainCellData, PlayableBoard } from '.';
 import { isMine } from '../../helpers/cellHelpers';
 import { convertToMatrix, getAroundItems, toMarixPosition } from '../../utils/matrix';
 import { getRandomElements } from '../../utils/random';
@@ -72,7 +65,7 @@ interface PlainBoardWithMines extends Omit<PlainBoard, 'data'> {
 // 周囲の爆弾の数を数える
 const setMineCount = (board: PlainBoardWithMines): PlayableBoard => {
   // matrixの要素を一つずつ見ていく
-  const newBoardData: PlayableCellData[][] = board.data.map((row, i) => {
+  const newBoardData: PlayableBoard['data'] = board.data.map((row, i) => {
     return row.map((cell, j) => {
       // 爆弾だったら何もしない
       if (isMine(cell)) return cell;

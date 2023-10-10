@@ -4,7 +4,6 @@ import {
   Board,
   countNormalFlags,
   countSuspectedFlags,
-  igniteMines,
   initBoard,
   isAllOpened,
   openAll,
@@ -14,27 +13,40 @@ import {
   toggleFlag,
   PlainBoard,
   PlayableBoard,
+  AllOpenedBoard,
+  ExplodedBoard,
 } from '../logics/board';
+import { isExplodedBoard } from '../logics/board/boardQueries';
 
 interface State {
   gameMode: GameMode;
   gameState: GameState;
   board: Board;
-};
+}
 
 interface InitialState extends State {
   gameState: 'initialized';
   board: PlainBoard;
-};
+}
 
 interface PlayingState extends State {
   gameState: 'playing';
   board: PlayableBoard;
-};
+}
+
+interface CompletedState extends State {
+  gameState: 'completed';
+  board: AllOpenedBoard;
+}
+
+interface FailedState extends State {
+  gameState: 'failed';
+  board: ExplodedBoard;
+}
 
 const isInitialState = (state: State | InitialState): state is InitialState => {
   return state.gameState === 'initialized';
-}
+};
 
 const isPlayingState = (state: State | InitialState): state is PlayingState => {
   return state.gameState === 'playing';
@@ -56,14 +68,9 @@ const initialize = (gameMode: GameMode): InitialState => {
 };
 
 const open = (
-  state: InitialState | PlayingState | State,
+  state: InitialState | PlayingState,
   action: Extract<Action, { type: 'open' }>,
-): PlayingState | State => {
-  if (!isInitialState(state) && !isPlayingState(state)) {
-    console.error('Invalid state: Expected InitialState or PlayingState. Got ' + state.gameState);
-    return state;
-  }
-
+): PlayingState | CompletedState | FailedState => {
   // 最初のターンだけクリックした場所が空白になるように盤面を強制的に書き換える
   const board = isInitialState(state) ? makePlayable(state.board, action.index) : state.board;
 
@@ -80,15 +87,15 @@ const open = (
     }
     return { ...state, gameState: 'playing', board: updatedBoard };
   } else {
-    switch (result.value) {
-      case 'Mine Exploded':
-        return {
-          ...state,
-          gameState: 'failed',
-          board: igniteMines(openAll(state.board)),
-        };
-      default:
-        return state;
+    const invalidBoard = result.value;
+    if (isExplodedBoard(invalidBoard)) {
+      return {
+        ...state,
+        gameState: 'failed',
+        board: invalidBoard,
+      };
+    } else {
+      return { ...state, gameState: 'playing', board: invalidBoard };
     }
   }
 };
@@ -103,13 +110,27 @@ const reducer = (state: State, action: Action): State => {
       return initialize(state.gameMode);
     // マスを開く
     case 'open':
+      if (!isInitialState(state) && !isPlayingState(state)) {
+        console.error(
+          'Invalid state: Expected InitialState or PlayingState. Got ' + state.gameState,
+        );
+        return state;
+      }
       return open(state, action);
     case 'toggleFlag':
+      if (!isPlayingState(state)) {
+        console.error('Invalid state: Expected PlayingState. Got ' + state.gameState);
+        return state;
+      }
       return {
         ...state,
         board: toggleFlag(state.board, action.index),
       };
     case 'switchFlagType':
+      if (!isPlayingState(state)) {
+        console.error('Invalid state: Expected PlayingState. Got ' + state.gameState);
+        return state;
+      }
       return {
         ...state,
         board: switchFlagType(state.board, action.index),
