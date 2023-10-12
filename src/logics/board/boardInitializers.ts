@@ -1,4 +1,12 @@
-import { BoardConfig, CellData, PlainBoard, PlainCellData, PlayableBoard } from '.';
+import {
+  Board,
+  BoardConfig,
+  Cell,
+  PlainBoard,
+  PlainCell,
+  PlayableBoard,
+  UnexplodedMineCell,
+} from '.';
 import { isMine } from '../../helpers/cellHelpers';
 import { convertToMatrix, getAroundItems, toMarixPosition } from '../../utils/matrix';
 import { getRandomElements } from '../../utils/random';
@@ -9,7 +17,7 @@ export const initBoard = (config: BoardConfig): PlainBoard => {
 
 const makePlainBoard = (config: BoardConfig): PlainBoard => {
   const { rows, cols } = config;
-  const plainBoardData: PlainCellData[] = [...Array(rows * cols)].map((_, i) => {
+  const plainBoardData: PlainCell[] = [...Array(rows * cols)].map((_, i) => {
     return {
       id: i,
       content: { type: 'empty' },
@@ -25,7 +33,7 @@ const makePlainBoard = (config: BoardConfig): PlainBoard => {
 
 export const makePlayable = (
   board: PlainBoard,
-  forceEmpty: CellData['id'] | undefined = undefined,
+  forceEmpty: Cell['id'] | undefined = undefined,
 ): PlayableBoard => {
   // initialBoardの中からランダムにmines個の爆弾の位置を決める
   // forceEmptyが指定されている場合はそのマスと周囲のマスを除外する
@@ -58,9 +66,7 @@ export const makePlayable = (
 };
 
 // mine-added plain board(without mine count)
-interface PlainBoardWithMines extends Omit<PlainBoard, 'data'> {
-  data: Array<Array<PlainCellData | (CellData & { content: { type: 'mine'; exploded: false } })>>;
-}
+type PlainBoardWithMines = Board<PlainCell | UnexplodedMineCell>;
 
 // 周囲の爆弾の数を数える
 const setMineCount = (board: PlainBoardWithMines): PlayableBoard => {

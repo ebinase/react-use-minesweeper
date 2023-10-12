@@ -28,10 +28,11 @@ export type Cell = {
 export type EmptyContent = { type: 'empty' };
 export type UnexplodedMineContent = { type: 'mine'; exploded: false };
 export type ExplodedMineContent = { type: 'mine'; exploded: true };
-export type CountContent = { type: 'count'; value: number };
+export type MineCountContent = { type: 'count'; value: number };
 
 // Specific Cell State Types
 export type UnopenedState = { type: 'unopened'; flag: 'normal' | 'suspected' | 'none' };
+export type FlaggedState = Exclude<UnopenedState, { flag: 'none' }>;
 export type OpenedState = { type: 'opened' };
 
 // Specific Cell Types
@@ -41,7 +42,7 @@ export type PlainCell = Cell & {
   state: UnopenedState;
 };
 // mine must be unopened while playing
-type UntouchableCell = Cell & {
+export type UnexplodedMineCell = Cell & {
   content: UnexplodedMineContent;
   state: UnopenedState;
 };
@@ -51,7 +52,7 @@ type SafeCell = Cell & {
   state: UnopenedState | OpenedState;
 };
 // Varieties of cells which appear on the board while playing
-export type PlayableCell = UntouchableCell | SafeCell;
+export type PlayableCell = UnexplodedMineCell | SafeCell;
 
 export type ExplodedMineCell = Cell & {
   content: ExplodedMineContent;
