@@ -1,59 +1,76 @@
-export interface Board {
-  meta: BoardConfig;
-  data: CellData[][];
-}
-
-export interface PlainBoard extends Board {
-  data: PlainCellData[][];
-}
-
-export interface PlayableBoard extends Board {
-  data: PlayableCellData[][];
-}
-
-export interface AllOpenedBoard extends Board {
-  data: AllOpenedCellData[][];
-}
-
-export interface ExplodedBoard extends Board {
-  data: (ExplodedCellData | AllOpenedCellData)[][];
-}
-
 export type BoardConfig = {
   rows: number;
   cols: number;
   mines: number;
 };
 
-export interface CellData {
+export type Board<T> = {
+  meta: BoardConfig;
+  data: T[][];
+};
+
+export type CellState =
+  | { type: 'opened' }
+  | { type: 'unopened'; flag: 'normal' | 'suspected' | 'none' };
+
+export type CellContent =
+  | { type: 'mine'; exploded: boolean }
+  | { type: 'count'; value: number }
+  | { type: 'empty' };
+
+export type Cell = {
   id: number;
-  content:
-    | { type: 'mine'; exploded: boolean }
-    | { type: 'count'; value: number }
-    | { type: 'empty' };
-  state: { type: 'opened' } | { type: 'unopened'; flag: 'normal' | 'suspected' | 'none' };
-}
+  content: CellContent;
+  state: CellState;
+};
 
-export interface PlainCellData extends CellData {
-  content: { type: 'empty' };
-  state: { type: 'unopened'; flag: 'none' };
-}
+// Specific Cell Content Types
+export type EmptyContent = { type: 'empty' };
+export type UnexplodedMineContent = { type: 'mine'; exploded: false };
+export type ExplodedMineContent = { type: 'mine'; exploded: true };
+export type CountContent = { type: 'count'; value: number };
 
-export interface PlayableCellData extends Omit<CellData, 'content'> {
-  content:
-    | { type: 'mine'; exploded: false } // [changed] exploded: boolean -> exploded: false
-    | Exclude<CellData['content'], { type: 'mine'; exploded: boolean }>;
-}
+// Specific Cell State Types
+export type UnopenedState = { type: 'unopened'; flag: 'normal' | 'suspected' | 'none' };
+export type OpenedState = { type: 'opened' };
 
-// all cells are opened and mines are not exploded
-export interface AllOpenedCellData extends PlayableCellData {
-  state: { type: 'opened' };
-}
+// Specific Cell Types
 
-// all cells are opened and mines are exploded
-export interface ExplodedCellData extends Omit<CellData, 'content'> {
-  content:
-    | { type: 'mine'; exploded: true } // [changed] exploded: boolean -> exploded: true
-    | Exclude<CellData['content'], { type: 'mine'; exploded: boolean }>;
-  state: { type: 'opened' };
-}
+export type PlainCell = Cell & {
+  content: EmptyContent;
+  state: UnopenedState;
+};
+// mine must be unopened while playing
+type UntouchableCell = Cell & {
+  content: UnexplodedMineContent;
+  state: UnopenedState;
+};
+// contents which can be opened
+type SafeCell = Cell & {
+  content: Exclude<CellContent, { type: 'mine' }>;
+  state: UnopenedState | OpenedState;
+};
+// Varieties of cells which appear on the board while playing
+export type PlayableCell = UntouchableCell | SafeCell;
+
+export type ExplodedMineCell = Cell & {
+  content: ExplodedMineContent;
+};
+
+// All cells are opened and mines are not exploded
+export type CompletedCell = Cell & {
+  content: Exclude<CellContent, ExplodedMineContent>;
+  state: OpenedState;
+};
+
+// All cells are opened and mines are exploded
+export type FailedCell = Cell & {
+  content: Exclude<CellContent, UnexplodedMineContent>;
+  state: OpenedState;
+};
+
+// Board Types
+export type PlainBoard = Board<PlainCell>;
+export type PlayableBoard = Board<PlayableCell>;
+export type CompletedBoard = Board<CompletedCell>;
+export type FailedBoard = Board<FailedCell>;
