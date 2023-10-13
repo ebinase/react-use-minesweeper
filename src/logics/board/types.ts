@@ -9,9 +9,8 @@ export type Board<T> = {
   data: T[][];
 };
 
-export type CellState =
-  | { type: 'opened' }
-  | { type: 'unopened'; flag: 'normal' | 'suspected' | 'none' };
+export type CellState = { type: 'opened' } | { type: 'unopened'; flag: FlagValue };
+type FlagValue = 'normal' | 'suspected' | 'none';
 
 export type CellContent =
   | { type: 'mine'; exploded: boolean }
@@ -31,8 +30,8 @@ export type ExplodedMineContent = { type: 'mine'; exploded: true };
 export type MineCountContent = { type: 'count'; value: number };
 
 // Specific Cell State Types
-export type UnopenedState = { type: 'unopened'; flag: 'normal' | 'suspected' | 'none' };
-export type FlaggedState = Exclude<UnopenedState, { flag: 'none' }>;
+export type UnopenedState = { type: 'unopened'; flag: FlagValue };
+export type FlaggedState = { type: 'unopened'; flag: Exclude<FlagValue, 'none'> };
 export type OpenedState = { type: 'opened' };
 
 // Specific Cell Types
@@ -47,7 +46,7 @@ export type UnexplodedMineCell = Cell & {
   state: UnopenedState;
 };
 // contents which can be opened
-type SafeCell = Cell & {
+export type SafeCell = Cell & {
   content: Exclude<CellContent, { type: 'mine' }>;
   state: UnopenedState | OpenedState;
 };
