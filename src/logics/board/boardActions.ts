@@ -1,10 +1,23 @@
-import { Cell, CompletedBoard, EmptyContent, FailedBoard, MineCountContent, PlayableBoard, PlayableCell, SafeCell, UnopenedState } from '.';
+import {
+  Cell,
+  CompletedBoard,
+  EmptyContent,
+  FailedBoard,
+  PlayableBoard,
+  PlayableCell,
+  SafeCell,
+  UnopenedState,
+  isOnlyMinesLeft,
+} from '.';
 import { isOpened, isEmpty, isMine, isUnopened } from '../../helpers/cellHelpers';
 
 import { Either } from '../../types/either';
 import { getAroundItems, toMarixPosition, isInside } from '../../utils/matrix';
 
-const open = (board: PlayableBoard, targetCell: SafeCell & {state: UnopenedState}): PlayableBoard | CompletedBoard => {
+const open = (
+  board: PlayableBoard,
+  targetCell: SafeCell & { state: UnopenedState },
+): PlayableBoard => {
   // 指定されたboardのマスを開く
   return {
     ...board,
@@ -23,14 +36,14 @@ const open = (board: PlayableBoard, targetCell: SafeCell & {state: UnopenedState
 const openEmptyArea = (
   board: PlayableBoard,
   targetCell: Cell & { content: EmptyContent; state: UnopenedState },
-): PlayableBoard | CompletedBoard => {
+): PlayableBoard => {
   // flood fill
   // はじめはキューで実装していたが、Array.shift()がO(n)なので遅いためスタックで実装
   let stack = [toMarixPosition(targetCell.id, board.meta.cols)];
   // 同じマスを何度も開かないようにするためにSetを使う
   let checkList = new Set<Cell['id']>();
 
-  let newBoard: PlayableBoard | CompletedBoard = board;
+  let newBoard = board;
 
   // TODO: 効率化
   while (stack.length > 0) {
@@ -78,7 +91,9 @@ export const openCell = (
     ? openEmptyArea(board, targetCell as typeof targetCell & { state: UnopenedState })
     : open(board, targetCell as typeof targetCell & { state: UnopenedState });
 
-  return { kind: 'Right', value: updatedBoard };
+  return isOnlyMinesLeft(updatedBoard)
+    ? { kind: 'Right', value: openAll(updatedBoard) }
+    : { kind: 'Right', value: updatedBoard };
 };
 
 export const openAll = (board: PlayableBoard): CompletedBoard => {

@@ -5,23 +5,22 @@ import {
   countNormalFlags,
   countSuspectedFlags,
   initBoard,
-  isAllOpened,
-  openAll,
   openCell,
   makePlayable,
   switchFlagType,
   toggleFlag,
   PlainBoard,
   PlayableBoard,
-  AllOpenedBoard,
-  ExplodedBoard,
+  CompletedBoard,
+  FailedBoard,
+  isCompletedBoard,
+  isExplodedBoard,
 } from '../logics/board';
-import { isExplodedBoard } from '../logics/board/boardQueries';
 
 interface State {
   gameMode: GameMode;
   gameState: GameState;
-  board: Board;
+  board: Board<any>;
 }
 
 interface InitialState extends State {
@@ -36,12 +35,12 @@ interface PlayingState extends State {
 
 interface CompletedState extends State {
   gameState: 'completed';
-  board: AllOpenedBoard;
+  board: CompletedBoard;
 }
 
 interface FailedState extends State {
   gameState: 'failed';
-  board: ExplodedBoard;
+  board: FailedBoard;
 }
 
 const isInitialState = (state: State | InitialState): state is InitialState => {
@@ -78,14 +77,13 @@ const open = (
 
   if (result.kind === 'Right') {
     const updatedBoard = result.value;
-    if (isAllOpened(updatedBoard)) {
-      return {
-        ...state,
-        gameState: 'completed',
-        board: openAll(updatedBoard),
-      };
-    }
-    return { ...state, gameState: 'playing', board: updatedBoard };
+    return isCompletedBoard(updatedBoard)
+      ? {
+          ...state,
+          gameState: 'completed',
+          board: updatedBoard,
+        }
+      : { ...state, gameState: 'playing', board: updatedBoard };
   } else {
     const invalidBoard = result.value;
     if (isExplodedBoard(invalidBoard)) {

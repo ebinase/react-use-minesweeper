@@ -1,9 +1,17 @@
-import { Board, Cell, CompletedBoard, FailedBoard, FlaggedState, PlainBoard, PlayableBoard } from '.';
+import { Cell, CompletedBoard, FailedBoard, FlaggedState, PlainBoard, PlayableBoard } from '.';
 import { isMine, isOpened, isFlagged, isExplodedMine } from '../../helpers/cellHelpers';
 
-export const isAllOpened = (board: PlayableBoard | CompletedBoard): board is CompletedBoard => {
+export const isOnlyMinesLeft = (board: PlayableBoard): boolean => {
   return board.data.flat().every((cell) => {
-    return isMine(cell) || isOpened(cell); // 爆弾以外のマスが全て開いていたら勝利
+    return (isMine(cell) && !isOpened(cell)) || isOpened(cell); // 爆弾以外のマスが全て開いていたら勝利
+  });
+};
+
+export const isCompletedBoard = (
+  board: PlayableBoard | CompletedBoard,
+): board is CompletedBoard => {
+  return board.data.flat().every((cell) => {
+    return !isExplodedMine(cell) && isOpened(cell);
   });
 };
 
