@@ -7,9 +7,17 @@ export { useMinesweeper } from './hooks/useMinesweeper';
 export { GAME_MODE_LIST } from './logics/game';
 
 // helpers
-export { isMine, isCount, isEmpty, isOpened, isUnopened, isFlagged } from './helpers/cellHelpers';
+export {
+  isMine,
+  // isExplodedMine,
+  isMineCount as isCount,
+  isEmpty,
+  isOpened,
+  isUnopened,
+  isFlagged,
+} from './helpers/cellHelpers';
 
 // types
 export type { Minesweeper } from './hooks/useMinesweeper';
 export type { GameMode } from './logics/game';
-export type { Board, BoardConfig, CellData } from './logics/board';
+export type { Board, BoardConfig, Cell as CellData } from './logics/board';
