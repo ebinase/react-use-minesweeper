@@ -23,7 +23,7 @@ const open = (
     ...board,
     data: board.data.map((row) => {
       return row.map((cell) => {
-        if (cell.id !== targetCell.id) {
+        if (cell.id === targetCell.id) {
           return { ...targetCell, state: { type: 'opened' } };
         }
         return cell;
