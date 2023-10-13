@@ -4,20 +4,51 @@ import {
   Board,
   countNormalFlags,
   countSuspectedFlags,
-  igniteMines,
   initBoard,
-  isAllOpened,
-  openAll,
   openCell,
-  setMines,
+  makePlayable,
   switchFlagType,
   toggleFlag,
+  PlainBoard,
+  PlayableBoard,
+  CompletedBoard,
+  FailedBoard,
+  isCompletedBoard,
+  isExplodedBoard,
 } from '../logics/board';
 
-type State = {
+interface State {
   gameMode: GameMode;
   gameState: GameState;
-  board: Board;
+  board: Board<any>;
+}
+
+interface InitialState extends State {
+  gameState: 'initialized';
+  board: PlainBoard;
+}
+
+interface PlayingState extends State {
+  gameState: 'playing';
+  board: PlayableBoard;
+}
+
+interface CompletedState extends State {
+  gameState: 'completed';
+  board: CompletedBoard;
+}
+
+interface FailedState extends State {
+  gameState: 'failed';
+  board: FailedBoard;
+}
+
+const isInitialState = (state: State | InitialState): state is InitialState => {
+  return state.gameState === 'initialized';
+};
+
+const isPlayingState = (state: State | InitialState): state is PlayingState => {
+  return state.gameState === 'playing';
 };
 
 type Action =
@@ -27,7 +58,7 @@ type Action =
   | { type: 'toggleFlag'; index: number }
   | { type: 'switchFlagType'; index: number };
 
-const initialize = (gameMode: GameMode): State => {
+const initialize = (gameMode: GameMode): InitialState => {
   return {
     gameMode,
     gameState: 'initialized',
@@ -35,38 +66,34 @@ const initialize = (gameMode: GameMode): State => {
   };
 };
 
-const open = (state: State, action: Extract<Action, { type: 'open' }>): State => {
-  // ゲームが終了していたら何もしない
-  if (state.gameState === 'completed' || state.gameState === 'failed') {
-    return state;
-  }
-
+const open = (
+  state: InitialState | PlayingState,
+  action: Extract<Action, { type: 'open' }>,
+): PlayingState | CompletedState | FailedState => {
   // 最初のターンだけクリックした場所が空白になるように盤面を強制的に書き換える
-  const board =
-    state.gameState === 'initialized' ? setMines(state.board, action.index) : state.board;
+  const board = isInitialState(state) ? makePlayable(state.board, action.index) : state.board;
 
   const result = openCell(board, action.index);
 
   if (result.kind === 'Right') {
     const updatedBoard = result.value;
-    if (isAllOpened(updatedBoard)) {
+    return isCompletedBoard(updatedBoard)
+      ? {
+          ...state,
+          gameState: 'completed',
+          board: updatedBoard,
+        }
+      : { ...state, gameState: 'playing', board: updatedBoard };
+  } else {
+    const invalidBoard = result.value;
+    if (isExplodedBoard(invalidBoard)) {
       return {
         ...state,
-        gameState: 'completed',
-        board: openAll(updatedBoard),
+        gameState: 'failed',
+        board: invalidBoard,
       };
-    }
-    return { ...state, gameState: 'playing', board: updatedBoard };
-  } else {
-    switch (result.value) {
-      case 'Mine Exploded':
-        return {
-          ...state,
-          gameState: 'failed',
-          board: igniteMines(openAll(state.board)),
-        };
-      default:
-        return state;
+    } else {
+      return { ...state, gameState: 'playing', board: invalidBoard };
     }
   }
 };
@@ -81,13 +108,27 @@ const reducer = (state: State, action: Action): State => {
       return initialize(state.gameMode);
     // マスを開く
     case 'open':
+      if (!isInitialState(state) && !isPlayingState(state)) {
+        console.error(
+          'Invalid state: Expected InitialState or PlayingState. Got ' + state.gameState,
+        );
+        return state;
+      }
       return open(state, action);
     case 'toggleFlag':
+      if (!isPlayingState(state)) {
+        console.error('Invalid state: Expected PlayingState. Got ' + state.gameState);
+        return state;
+      }
       return {
         ...state,
         board: toggleFlag(state.board, action.index),
       };
     case 'switchFlagType':
+      if (!isPlayingState(state)) {
+        console.error('Invalid state: Expected PlayingState. Got ' + state.gameState);
+        return state;
+      }
       return {
         ...state,
         board: switchFlagType(state.board, action.index),

@@ -1,31 +1,38 @@
-import { CellData } from '../logics/board';
+import type {
+  Cell,
+  EmptyContent,
+  ExplodedMineCell,
+  FlaggedState,
+  MineCountContent,
+  OpenedState,
+  UnexplodedMineCell,
+  UnopenedState,
+} from '../logics/board';
 
-export function isMine(
-  cell: CellData,
-): cell is CellData & { content: { type: 'mine'; exploded: boolean } } {
+export function isMine(cell: Cell): cell is UnexplodedMineCell | ExplodedMineCell {
   return cell.content.type === 'mine';
 }
 
-export function isCount(
-  cell: CellData,
-): cell is CellData & { content: { type: 'count'; value: number } } {
+export function isExplodedMine(cell: Cell): cell is ExplodedMineCell {
+  return isMine(cell) && cell.content.exploded;
+}
+
+export function isMineCount(cell: Cell): cell is Cell & { content: MineCountContent } {
   return cell.content.type === 'count';
 }
 
-export function isEmpty(cell: CellData): cell is CellData & { content: { type: 'empty' } } {
+export function isEmpty(cell: Cell): cell is Cell & { content: EmptyContent } {
   return cell.content.type === 'empty';
 }
 
-export function isOpened(cell: CellData): cell is CellData & { state: { type: 'opened' } } {
+export function isOpened(cell: Cell): cell is Cell & { state: OpenedState } {
   return cell.state.type === 'opened';
 }
 
-export function isUnopened(cell: CellData): cell is CellData & { state: { type: 'unopened' } } {
+export function isUnopened(cell: Cell): cell is Cell & { state: UnopenedState } {
   return cell.state.type === 'unopened';
 }
 
-export function isFlagged(cell: CellData): cell is CellData & {
-  state: { type: 'unopened'; flag: 'normal' | 'suspected' };
-} {
+export function isFlagged(cell: Cell): cell is Cell & { state: FlaggedState } {
   return isUnopened(cell) && cell.state.flag !== 'none';
 }

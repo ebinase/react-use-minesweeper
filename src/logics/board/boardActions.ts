@@ -1,17 +1,30 @@
-import { Board, CellData } from '.';
+import {
+  Cell,
+  CompletedBoard,
+  EmptyContent,
+  FailedBoard,
+  PlayableBoard,
+  PlayableCell,
+  SafeCell,
+  UnopenedState,
+  isOnlyMinesLeft,
+} from '.';
 import { isOpened, isEmpty, isMine, isUnopened } from '../../helpers/cellHelpers';
 
 import { Either } from '../../types/either';
 import { getAroundItems, toMarixPosition, isInside } from '../../utils/matrix';
 
-const open = (board: Board, selected: [number, number]): Board => {
+const open = (
+  board: PlayableBoard,
+  targetCell: SafeCell & { state: UnopenedState },
+): PlayableBoard => {
   // 指定されたboardのマスを開く
   return {
     ...board,
-    data: board.data.map((row, i) => {
-      return row.map((cell, j) => {
-        if (i === selected[0] && j === selected[1]) {
-          return { ...cell, state: { type: 'opened' } };
+    data: board.data.map((row) => {
+      return row.map((cell) => {
+        if (cell.id !== targetCell.id) {
+          return { ...targetCell, state: { type: 'opened' } };
         }
         return cell;
       });
@@ -20,15 +33,15 @@ const open = (board: Board, selected: [number, number]): Board => {
 };
 
 // 何もないマスを一括開放する
-const openEmptyArea = (board: Board, selected: [number, number]): Board => {
-  const selectedCell = board.data[selected[0]][selected[1]];
-  if (isOpened(selectedCell) || !isEmpty(selectedCell)) return board;
-
+const openEmptyArea = (
+  board: PlayableBoard,
+  targetCell: Cell & { content: EmptyContent; state: UnopenedState },
+): PlayableBoard => {
   // flood fill
   // はじめはキューで実装していたが、Array.shift()がO(n)なので遅いためスタックで実装
-  let stack = [selected];
+  let stack = [toMarixPosition(targetCell.id, board.meta.cols)];
   // 同じマスを何度も開かないようにするためにSetを使う
-  let checkList = new Set<CellData['id']>();
+  let checkList = new Set<Cell['id']>();
 
   let newBoard = board;
 
@@ -36,12 +49,15 @@ const openEmptyArea = (board: Board, selected: [number, number]): Board => {
   while (stack.length > 0) {
     const target = stack.pop() as [number, number];
 
-    newBoard = open(newBoard, target);
+    newBoard = open(
+      newBoard as PlayableBoard,
+      newBoard.data[target[0]][target[1]] as SafeCell & { state: UnopenedState },
+    );
 
     if (!isEmpty(newBoard.data[target[0]][target[1]])) continue;
 
     // 何もないマスだったら周囲のマスをキューに追加
-    getAroundItems(newBoard.data, target)
+    getAroundItems(newBoard.data as PlayableCell[][], target)
       .filter((cell) => !isOpened(cell) && !isMine(cell))
       .filter((cell) => !checkList.has(cell.id))
       .forEach((cell) => {
@@ -53,29 +69,34 @@ const openEmptyArea = (board: Board, selected: [number, number]): Board => {
   return newBoard;
 };
 
-export const openCell = (board: Board, cellId: number): Either<string, Board> => {
+export const openCell = (
+  board: PlayableBoard,
+  cellId: number,
+): Either<PlayableBoard | FailedBoard, PlayableBoard | CompletedBoard> => {
   const position = toMarixPosition(cellId, board.meta.cols);
 
   const targetCell = board.data[position[0]][position[1]];
 
-  if (!isInside(position, board.data)) {
-    return { kind: 'Left', value: 'Invalid position' };
-  }
-
-  if (isOpened(targetCell)) {
-    return { kind: 'Left', value: 'Cell already opened' };
+  if (!isInside(position, board.data) || isOpened(targetCell)) {
+    return { kind: 'Left', value: board };
   }
 
   if (isMine(targetCell)) {
-    return { kind: 'Left', value: 'Mine Exploded' };
+    return { kind: 'Left', value: igniteMines(board) };
   }
 
-  const updatedBoard = isEmpty(targetCell) ? openEmptyArea(board, position) : open(board, position);
+  // result of checks above, targetCell is unopened and not mine
+  // targetCellがSafeCell & { state: UnopenedState }であることをTypeScriptに伝える
+  const updatedBoard = isEmpty(targetCell)
+    ? openEmptyArea(board, targetCell as typeof targetCell & { state: UnopenedState })
+    : open(board, targetCell as typeof targetCell & { state: UnopenedState });
 
-  return { kind: 'Right', value: updatedBoard };
+  return isOnlyMinesLeft(updatedBoard)
+    ? { kind: 'Right', value: openAll(updatedBoard) }
+    : { kind: 'Right', value: updatedBoard };
 };
 
-export const openAll = (board: Board): Board => {
+export const openAll = (board: PlayableBoard): CompletedBoard => {
   return {
     ...board,
     data: board.data.map((row) => {
@@ -86,10 +107,11 @@ export const openAll = (board: Board): Board => {
   };
 };
 
-export const igniteMines = (board: Board): Board => {
+export const igniteMines = (board: PlayableBoard): FailedBoard => {
+  const openedBoard = openAll(board);
   return {
-    ...board,
-    data: board.data.map((row) => {
+    ...openedBoard,
+    data: openedBoard.data.map((row) => {
       return row.map((cell) => {
         return isMine(cell) ? { ...cell, content: { ...cell.content, exploded: true } } : cell;
       });
@@ -97,7 +119,7 @@ export const igniteMines = (board: Board): Board => {
   };
 };
 
-export const toggleFlag = (board: Board, cellId: number): Board => {
+export const toggleFlag = (board: PlayableBoard, cellId: number): PlayableBoard => {
   return {
     ...board,
     data: board.data.map((row) => {
@@ -115,7 +137,7 @@ export const toggleFlag = (board: Board, cellId: number): Board => {
   };
 };
 
-export const switchFlagType = (board: Board, cellId: number): Board => {
+export const switchFlagType = (board: PlayableBoard, cellId: number): PlayableBoard => {
   return {
     ...board,
     data: board.data.map((row) => {

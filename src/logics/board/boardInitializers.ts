@@ -1,16 +1,23 @@
-import { BoardConfig, Board, CellData } from '.';
+import {
+  Board,
+  BoardConfig,
+  Cell,
+  PlainBoard,
+  PlainCell,
+  PlayableBoard,
+  UnexplodedMineCell,
+} from '.';
 import { isMine } from '../../helpers/cellHelpers';
 import { convertToMatrix, getAroundItems, toMarixPosition } from '../../utils/matrix';
 import { getRandomElements } from '../../utils/random';
 
-// NOTE: PlainBoard型を作ってもいいかも
-export const initBoard = (config: BoardConfig): Board => {
+export const initBoard = (config: BoardConfig): PlainBoard => {
   return makePlainBoard(config);
 };
 
-const makePlainBoard = (config: BoardConfig): Board => {
+const makePlainBoard = (config: BoardConfig): PlainBoard => {
   const { rows, cols } = config;
-  const plainBoardData: CellData[] = [...Array(rows * cols)].map((_, i) => {
+  const plainBoardData: PlainCell[] = [...Array(rows * cols)].map((_, i) => {
     return {
       id: i,
       content: { type: 'empty' },
@@ -24,10 +31,10 @@ const makePlainBoard = (config: BoardConfig): Board => {
   };
 };
 
-export const setMines = (
-  board: Board,
-  forceEmpty: CellData['id'] | undefined = undefined,
-): Board => {
+export const makePlayable = (
+  board: PlainBoard,
+  forceEmpty: Cell['id'] | undefined = undefined,
+): PlayableBoard => {
   // initialBoardの中からランダムにmines個の爆弾の位置を決める
   // forceEmptyが指定されている場合はそのマスと周囲のマスを除外する
   const noMineArea =
@@ -44,7 +51,7 @@ export const setMines = (
     board.meta.mines,
   );
 
-  const boardWithMines: Board = {
+  const boardWithMines: PlainBoardWithMines = {
     ...board,
     data: board.data.map((row) => {
       return row.map((cell) => {
@@ -58,10 +65,13 @@ export const setMines = (
   return setMineCount(boardWithMines);
 };
 
+// mine-added plain board(without mine count)
+type PlainBoardWithMines = Board<PlainCell | UnexplodedMineCell>;
+
 // 周囲の爆弾の数を数える
-const setMineCount = (board: Board): Board => {
+const setMineCount = (board: PlainBoardWithMines): PlayableBoard => {
   // matrixの要素を一つずつ見ていく
-  const newBoardData: CellData[][] = board.data.map((row, i) => {
+  const newBoardData: PlayableBoard['data'] = board.data.map((row, i) => {
     return row.map((cell, j) => {
       // 爆弾だったら何もしない
       if (isMine(cell)) return cell;
