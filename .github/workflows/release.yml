@@ -10,11 +10,11 @@ on:
     branches:
       - main
     paths:
-    - 'package.json'
+      - 'package.json'
 
 jobs:
   release:
-    if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true && github.event.pull_request.head.ref == 'release'
     runs-on: ubuntu-latest
 
     steps:
@@ -40,3 +40,8 @@ jobs:
       run: npm publish
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+    - name: Delete release branch
+      run: git push origin --delete release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
