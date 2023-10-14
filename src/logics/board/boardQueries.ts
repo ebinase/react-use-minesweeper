@@ -16,7 +16,7 @@ export const isCompletedBoard = (
 };
 
 export const isExplodedBoard = (board: PlayableBoard | FailedBoard): board is FailedBoard => {
-  return board.data.flat().every((cell) => {
+  return board.data.flat().some((cell) => {
     return isExplodedMine(cell);
   });
 };
