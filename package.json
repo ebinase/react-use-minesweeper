@@ -1,7 +1,7 @@
 {
   "name": "@ebinas/react-use-minesweeper",
   "description": "A simple react hook for minesweeper",
-  "version": "0.2.6",
+  "version": "1.0.0",
   "license": "MIT",
   "author": "ebinas",
   "main": "./dist/index.js",
@@ -18,6 +18,10 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/ebinase/react-use-minesweeper.git"
+  },
+  "homepage": "https://github.com/ebinase/react-use-minesweeper#readme",
+  "bugs": {
+    "url": "https://github.com/ebinase/react-use-minesweeper/issues/new/choose"
   },
   "scripts": {
     "clean": "rimraf dist",

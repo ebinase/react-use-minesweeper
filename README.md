@@ -4,10 +4,13 @@ A react custom hook that provides the game logic for Minesweeper.
 
 ## 🔖 Overview
 
-This hook provides the core mechanics for Minesweeper using only standard React APIs. It simplifies the integration of Minesweeper logic into your React applications, allowing you to concentrate on the UI and UX.
+This hook provides the core mechanics for Minesweeper using only standard React APIs. It simplifies the integration of Minesweeper logic into your React applications.
 
 ### 🎮 Demo
-You can play example web app here: https://mine-sweeper.ebinas.dev/
+You can play example web app here:
+
+🌐 https://mine-sweeper.ebinas.dev/
+
 <img width="1440" alt="playable example" src="https://github.com/ebinase/react-use-minesweeper/assets/54468945/2ec6dc73-cf20-4797-a6d0-a3c87fce17e1">
 
 ## 🚀 API
@@ -69,20 +72,21 @@ const Example: React.FC<Props> = ({ defaultGameMode }) => {
 ---
 
 ### Others
-| Category          | Name           | Description                               |
-|-------------------|----------------|-------------------------------------------|
-| **Constants**     | GAME_MODE_LIST | A list of available game modes.           |
-| **Helper Functions** | isMine       | Check if a cell is a mine.               |
-|                   | isCount        | Check if a cell has a count.              |
-|                   | isEmpty        | Check if a cell is empty.                 |
-|                   | isOpened       | Check if a cell is opened.                |
-|                   | isUnopened     | Check if a cell is unopened.              |
-|                   | isFlagged      | Check if a cell is flagged. (ignore flag type) |
-| **Types**         | Minesweeper    | Return type of useMinesweeper Hook        |
-|                   | GameMode       | Type for game modes.                      |
-|                   | Board          | Type for the game board.                  |
-|                   | BoardConfig    | Configuration type for the board.         |
-|                   | CellData       | Type for individual cell data.            |
+| Category          | Name           | Description                               | extra                              |
+|-------------------|----------------|-------------------------------------------|------------------------------------|
+| **Constants**     | GAME_MODE_LIST | A list of available game modes.           |                                    |
+| **Helper Functions** | isMine      | Check if a cell is a mine.                |                                    |
+|                   | isExplodedMine | Check if a cell is a flag.                |                                    |
+|                   | isMineCount    | Check if a cell has a count.              | renamed from `isCount` on v1.0.0   |
+|                   | isEmpty        | Check if a cell is empty.                 |                                    |
+|                   | isOpened       | Check if a cell is opened.                |                                    |
+|                   | isUnopened     | Check if a cell is unopened.              |                                    |
+|                   | isFlagged      | Check if a cell is flagged. (ignore flag type) |                               |
+| **Types**         | Minesweeper    | Return type of useMinesweeper Hook        |                                    |
+|                   | GameMode       | Type for game modes.                      |                                    |
+|                   | Board          | Type for the game board.                  |                                    |
+|                   | BoardConfig    | Configuration type for the board.         |                                    |
+|                   | Cell           | Type for individual cell data.            |  renamed from `CellData` on v1.0.0 |
 
 
 ## 📖 Background
