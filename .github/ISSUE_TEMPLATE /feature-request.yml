@@ -1,0 +1,17 @@
+name: Feature request
+description: Suggest an idea for this project
+title: "[FEATURE]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this feature request!
+  - type: textarea
+    id: enhancement-description
+    attributes:
+      label: Description
+      description: A description of what your request is
+      placeholder: Tell us your idea!
+    validations:
+      required: true
