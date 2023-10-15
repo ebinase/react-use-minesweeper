@@ -1,0 +1,17 @@
+name: Bug report
+description: File a bug report
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Description
+      description: A description of what the bug is
+      placeholder: Tell us what you see!
+    validations:
+      required: true
