@@ -19,6 +19,10 @@
     "type": "git",
     "url": "https://github.com/ebinase/react-use-minesweeper.git"
   },
+  "homepage": "https://github.com/ebinase/react-use-minesweeper#readme",
+  "bugs": {
+    "url": "https://github.com/ebinase/react-use-minesweeper/issues/new/choose"
+  },
   "scripts": {
     "clean": "rimraf dist",
     "build": "npm run clean && tsc",
