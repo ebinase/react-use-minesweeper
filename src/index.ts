@@ -9,8 +9,8 @@ export { GAME_MODE_LIST } from './logics/game';
 // helpers
 export {
   isMine,
-  // isExplodedMine,
-  isMineCount as isCount,
+  isExplodedMine,
+  isMineCount,
   isEmpty,
   isOpened,
   isUnopened,
@@ -20,4 +20,4 @@ export {
 // types
 export type { Minesweeper } from './hooks/useMinesweeper';
 export type { GameMode } from './logics/game';
-export type { Board, BoardConfig, Cell as CellData } from './logics/board';
+export type { Board, BoardConfig, Cell } from './logics/board';
