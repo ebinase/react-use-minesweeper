@@ -1,94 +1,137 @@
 # react-use-minesweeper
 
-A react custom hook that provides the game logic for Minesweeper.
+A deterministic Minesweeper engine with a React adapter. Version 2 is a breaking redesign.
 
-## 🔖 Overview
+## React
 
-This hook provides the core mechanics for Minesweeper using only standard React APIs. It simplifies the integration of Minesweeper logic into your React applications.
+React 18.2 or later in the React 18 series is a peer dependency; the library does not install a second React. The core entry point can be used without React.
 
-### 🎮 Demo
-You can play example web app here:
-
-🌐 https://mine-sweeper.ebinas.dev/
-
-<img width="1440" alt="playable example" src="https://github.com/ebinase/react-use-minesweeper/assets/54468945/2ec6dc73-cf20-4797-a6d0-a3c87fce17e1">
-
-## 🚀 API
-### useMinesweeper hook
-Main hook to implement Minesweeper app.  
-Each method does't depend on state and was defined with `useCallback`.  
-(You can optimize rendering with `useMemo` in your app)
-
-```typescript
-const {
-  board,           // The current state of the Minesweeper board.
-  gameState,       // The current state of the game (e.g., "initialized", "playing", "completed", "failed").
-  gameMode,        // The current game mode (e.g., "easy", "normal", "hard").
-  init,            // Function to select game mode & initialize the game.
-  restart,         // Function to restart the game in same game mode.
-  open,            // Function to open a cell.
-  toggleFlag,      // Function to toggle a flag on a cell.
-  switchFlagType,  // Function to switch the type of flag(e.g., 🚩, ❓).
-  flags,           // The current number of flags used in the game.
-  settings         // The game settings constant.
-} = useMinesweeper();
-```
-
-#### Example Implementation
 ```tsx
-type Props = {
-  defaultGameMode: GameMode;
-};
+import { useMinesweeper } from '@ebinas/react-use-minesweeper/react';
 
-const Example: React.FC<Props> = ({ defaultGameMode }) => {
-  const {
-    board, gameState, gameMode, init, restart, open, toggleFlag, switchFlagType, flags, settings,
-  } = useMinesweeper(defaultGameMode);
+export function Minesweeper() {
+  const { game, board, stats, open, cycleFlag, restart, reset } = useMinesweeper({
+    preset: 'easy',
+  });
 
   return (
     <>
-      <h1>Example</h1>
-      <p>{`💣: ${board.meta.mines}, 🚩: ${flags.normal}, ❓: ${flags.suspected}`}</p>
-      {gameState === 'completed' && <p>🎉 You win!</p>}
-      <div>
-        {board.data.map((row) => {
-          return row.map((cell) => {
-            return (
-              <Cell key={cell.id} data={cell} open={open} toggleFlag={toggleFlag} switchFlagType={switchFlagType} />
-            );
-          });
-        })}
+      <p>
+        {game.status}: {stats.remainingMines} mines remaining
+      </p>
+      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${board.config.cols}, 2rem)` }}>
+        {board.cells.map((cell) => (
+          <button
+            key={cell.id}
+            disabled={cell.state === 'revealed'}
+            onClick={() => open(cell.id)}
+            onContextMenu={(event) => {
+              event.preventDefault();
+              cycleFlag(cell.id);
+            }}
+          >
+            {cell.state === 'hidden'
+              ? { none: '', flag: '🚩', question: '?' }[cell.flag]
+              : cell.value === 'mine'
+              ? '💣'
+              : cell.value || ''}
+          </button>
+        ))}
       </div>
-        <div>
-            <button onClick={() => init('hard')}>Hard Mode</button>
-            <button onClick={restart}>Restart</button>
-        </div>
-            
+      <button onClick={restart}>New game</button>
+      <button onClick={() => reset({ preset: 'hard' })}>Hard</button>
     </>
   );
-};
+}
 ```
 
----
+The Hook returns:
 
-### Others
-| Category          | Name           | Description                               | extra                              |
-|-------------------|----------------|-------------------------------------------|------------------------------------|
-| **Constants**     | GAME_MODE_LIST | A list of available game modes.           |                                    |
-| **Helper Functions** | isMine      | Check if a cell is a mine.                |                                    |
-|                   | isExplodedMine | Check if a cell is a flag.                |                                    |
-|                   | isMineCount    | Check if a cell has a count.              | renamed from `isCount` on v1.0.0   |
-|                   | isEmpty        | Check if a cell is empty.                 |                                    |
-|                   | isOpened       | Check if a cell is opened.                |                                    |
-|                   | isUnopened     | Check if a cell is unopened.              |                                    |
-|                   | isFlagged      | Check if a cell is flagged. (ignore flag type) |                               |
-| **Types**         | Minesweeper    | Return type of useMinesweeper Hook        |                                    |
-|                   | GameMode       | Type for game modes.                      |                                    |
-|                   | Board          | Type for the game board.                  |                                    |
-|                   | BoardConfig    | Configuration type for the board.         |                                    |
-|                   | Cell           | Type for individual cell data.            |  renamed from `CellData` on v1.0.0 |
+| Property            | Contract                                                                              |
+| ------------------- | ------------------------------------------------------------------------------------- |
+| `game`              | Readonly engine state, including `status`, `config`, `preset`, and `seed`             |
+| `board`             | Display projection: flat `cells` with `id`, `row`, `col`, and a discriminated `state` |
+| `stats`             | Synchronous flag/question counts and remaining mine/safe-cell counts                  |
+| `open(id)`          | Open a cell or its connected empty area                                               |
+| `setFlag(id, flag)` | Explicitly set `'none'`, `'flag'`, or `'question'`                                    |
+| `cycleFlag(id)`     | Cycle none → flag → question → none                                                   |
+| `restart()`         | Keep configuration, advance the seed, clear progress                                  |
+| `reset(options?)`   | Create a new game with explicit settings; defaults to easy                            |
 
+Action functions keep their identity across renders. Hook options apply on mount; changing an options object does not silently reset a game. Call `reset` to change settings. Omitted Hook seeds are generated on mount or reset, outside the reducer.
 
-## 📖 Background
+## Framework-independent core
 
-This hook is derived from my Next.js application, [ebinase/mine-sweeper](https://github.com/ebinase/mine-sweeper). Its purpose is to separate the Minesweeper game logic from the UI, enabling easy implementation of Minesweeper in your projects.
+```ts
+import { createGame, transition, getBoard, getStats } from '@ebinas/react-use-minesweeper';
+
+let game = createGame({ config: { rows: 10, cols: 12, mines: 20 }, seed: 42 });
+game = transition(game, { type: 'setFlag', cell: 119, flag: 'flag' });
+game = transition(game, { type: 'open', cell: 0 });
+const board = getBoard(game);
+const stats = getStats(game);
+
+// Replay the same configuration, seed, first click, and actions for the same result.
+game = transition(game, { type: 'restart', seed: 42 });
+```
+
+The core uses seed `0` when omitted. Seeds are unsigned 32-bit integers. `transition` never reads clocks or random sources and never mutates its input. `restart` without a seed advances it deterministically; an explicit seed starts a replay. The pseudo-random generator is intended for local gameplay.
+
+## Configuration and rules
+
+`GameOptions` accepts either `preset` or `config`, plus optional `seed` and `firstClick`:
+
+- `PRESETS`: easy 9×9/10 mines, normal 16×16/40 mines, hard 30×16/99 mines.
+- Custom dimensions must be positive integers with at most `MAX_CELLS` (10,000) cells.
+- Mine counts must be non-negative integers.
+- `firstClick: 'zero'` (default) reserves the clicked cell and its neighbors. Mine count must allow this at every possible click: at most `rows * cols - min(rows, 3) * min(cols, 3)`.
+- `firstClick: 'safe'` reserves only the clicked cell and permits denser boards, up to `rows * cols - 1` mines.
+- Invalid configuration or seeds throw immediately. `validateConfig(config, firstClick?)` exposes the same validation for forms.
+- Cell IDs are zero-based row-major indices. Non-integers and out-of-range IDs are no-ops.
+- Both flags and questions block direct opening and flood fill. Marks can be placed before the first click. They do not change mine placement or start the game.
+- Opening an already-open cell, marking an opened cell, or acting after victory/defeat is a no-op. No-ops preserve the state object identity. Restart is always available.
+- Win means every safe cell is opened. Flags are not required. Opening a mine loses; only the clicked mine is marked as exploded.
+- `getBoard` reveals all cells after victory/defeat without erasing flags or changing the actual opened cells. Hidden display cells have no `value` field.
+- `remainingMines` is `mines - flags` and can be negative. Questions are counted separately.
+
+Engine state is readonly in TypeScript. It includes mine positions for deterministic local gameplay and is not a server authority boundary. Use the display projection to render hidden information, and do not mutate returned arrays or objects. Manually constructed or externally persisted state must be validated by its owner; `transition` expects a state produced by this version of the engine.
+
+## Entry points
+
+- `@ebinas/react-use-minesweeper`: engine, selectors, constants, and types; no React import.
+- `@ebinas/react-use-minesweeper/react`: Hook and its `Minesweeper` return type.
+- `@ebinas/react-use-minesweeper/core`: an alias for the default core API.
+
+The package ships native ES Modules and TypeScript declarations. Import the core from the package root; import the optional Hook explicitly from `/react`. The default entry point works without React installed. React is an optional peer for Hook users. CommonJS builds are not provided.
+
+## Migrating from v1
+
+| v1                                               | v2                                                            |
+| ------------------------------------------------ | ------------------------------------------------------------- |
+| `useMinesweeper('easy')`                         | `useMinesweeper({ preset: 'easy' })`                          |
+| `gameState` initialized/playing/completed/failed | `game.status` ready/playing/won/lost                          |
+| `gameMode`                                       | `game.preset` (`null` for custom boards)                      |
+| `init(mode)`                                     | `reset({ preset: mode })`                                     |
+| `board.meta`, `board.data`                       | `board.config`, `board.cells`                                 |
+| Helpers such as `isOpened`, `isMine`             | Narrow `cell.state === 'revealed'`, then inspect `cell.value` |
+| `toggleFlag(id)`                                 | `setFlag(id, currentFlag === 'none' ? 'flag' : 'none')`       |
+| `switchFlagType(id)`                             | `setFlag(id, currentFlag === 'flag' ? 'question' : 'flag')`   |
+| `flags.normal`, `flags.suspected`                | `stats.flags`, `stats.questions`                              |
+| `settings.gameModeList`, `GAME_MODE_LIST`        | `Object.keys(PRESETS)`                                        |
+| `GameMode`                                       | `Preset`                                                      |
+
+## Development
+
+```sh
+npm ci
+npm run typecheck
+npm test
+npm run test:cov
+npm run build
+npm run check:package
+npm pack
+```
+
+Tests cover invalid inputs, deterministic replays, immutability, first-click policies, marks, flood fill, win/loss, restart, and the largest supported board. React tests cover batched actions, stable callbacks, reset behavior, and synchronous stats under StrictMode. Type fixtures check the public discriminated unions and readonly guarantees. `check:package` installs the tarball into an isolated consumer and checks React-free default/core usage, ES Module imports, public types, and React peer resolution.
+
+Derived from [ebinase/mine-sweeper](https://github.com/ebinase/mine-sweeper).
