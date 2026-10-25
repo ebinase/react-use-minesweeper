@@ -22,7 +22,10 @@ jobs:
         node-version: 'lts/*'
 
     - name: Install dependencies
-      run: npm install
+      run: npm ci
+
+    - name: Check public types
+      run: npm run typecheck
 
     - name: Run tests
       run: npm run test
@@ -39,7 +42,7 @@ jobs:
         node-version: 'lts/*'
 
     - name: Install dependencies
-      run: npm install
+      run: npm ci
 
     - name: Check format
       run: |
@@ -58,7 +61,7 @@ jobs:
         node-version: 'lts/*'
 
     - name: Install dependencies
-      run: npm install
+      run: npm ci
 
     - name: Check build errors
-      run: npm run build
+      run: npm run check:package
